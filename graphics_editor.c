@@ -3,22 +3,22 @@
 #include <string.h>
 #include <math.h>
 
-#define CANVAS_WIDTH 100
-#define CANVAS_HEIGHT 40
+#define CANVAS_WIDTH 80
+#define CANVAS_HEIGHT 24
 #define MAX_OBJECTS 50
 
 // Shape types
 typedef enum {
-    CIRCLE,
-    RECTANGLE,
     LINE,
+    RECTANGLE,
+    CIRCLE,
     TRIANGLE
 } ShapeType;
 
 // Object structure
 typedef struct {
     ShapeType type;
-    int x1, y1, x2, y2, x3, y3;  // Coordinates for different shapes
+    int x1, y1, x2, y2, x3, y3;
     char character;
     int active;
 } Shape;
@@ -42,6 +42,7 @@ int add_object(Canvas* canvas, ShapeType type, int x1, int y1, int x2, int y2, i
 void delete_object(Canvas* canvas, int index);
 void redraw_canvas(Canvas* canvas);
 void modify_object(Canvas* canvas, int index, int x1, int y1, int x2, int y2, int x3, int y3);
+void free_canvas(Canvas* canvas);
 
 // Implementation
 
@@ -55,7 +56,7 @@ Canvas* create_canvas() {
 void clear_canvas(Canvas* canvas) {
     for (int i = 0; i < CANVAS_HEIGHT; i++) {
         for (int j = 0; j < CANVAS_WIDTH; j++) {
-            canvas->canvas[i][j] = ' ';
+            canvas->canvas[i][j] = '_';
         }
     }
 }
@@ -130,21 +131,13 @@ void draw_triangle(Canvas* canvas, int x1, int y1, int x2, int y2, int x3, int y
 
 void display_canvas(Canvas* canvas) {
     printf("\n");
-    printf("┌");
-    for (int i = 0; i < CANVAS_WIDTH; i++) printf("─");
-    printf("┐\n");
-
     for (int i = 0; i < CANVAS_HEIGHT; i++) {
-        printf("│");
         for (int j = 0; j < CANVAS_WIDTH; j++) {
             printf("%c", canvas->canvas[i][j]);
         }
-        printf("│\n");
+        printf("\n");
     }
-
-    printf("└");
-    for (int i = 0; i < CANVAS_WIDTH; i++) printf("─");
-    printf("┘\n");
+    printf("\n");
 }
 
 int add_object(Canvas* canvas, ShapeType type, int x1, int y1, int x2, int y2, int x3, int y3, char ch) {
@@ -180,6 +173,7 @@ int add_object(Canvas* canvas, ShapeType type, int x1, int y1, int x2, int y2, i
             break;
     }
 
+    printf("Object added with index %d.\n\n", canvas->object_count);
     return canvas->object_count++;
 }
 
@@ -231,6 +225,36 @@ void redraw_canvas(Canvas* canvas) {
                 break;
         }
     }
+}
+
+void list_objects(Canvas* canvas) {
+    printf("Objects:\n");
+    for (int i = 0; i < canvas->object_count; i++) {
+        if (!canvas->objects[i].active) continue;
+        
+        Shape* obj = &canvas->objects[i];
+        printf("Object %d: ", i);
+        
+        switch (obj->type) {
+            case LINE:
+                printf("Line from (%d,%d) to (%d,%d)\n", 
+                       obj->x1, obj->y1, obj->x2, obj->y2);
+                break;
+            case RECTANGLE:
+                printf("Rectangle from (%d,%d) to (%d,%d)\n", 
+                       obj->x1, obj->y1, obj->x2, obj->y2);
+                break;
+            case CIRCLE:
+                printf("Circle center=(%d,%d), radius=%d\n", 
+                       obj->x1, obj->y1, obj->x2);
+                break;
+            case TRIANGLE:
+                printf("Triangle (%d,%d)-(%d,%d)-(%d,%d)\n", 
+                       obj->x1, obj->y1, obj->x2, obj->y2, obj->x3, obj->y3);
+                break;
+        }
+    }
+    printf("\n");
 }
 
 void free_canvas(Canvas* canvas) {
